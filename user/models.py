@@ -1,6 +1,7 @@
 import os
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -65,3 +66,23 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class UserFollowing(models.Model):
+    user_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="followings"
+    )
+
+    following_user_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="followers"
+    )
+
+    class Meta:
+        unique_together = ("user_id", "following_user_id")
+
+    def __str__(self) -> str:
+        return f"User {self.following_user_id} follows user {self.user_id}"
