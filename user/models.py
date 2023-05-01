@@ -67,22 +67,26 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def count_followers(self):
+        return self.followers.count()
+
 
 class UserFollowing(models.Model):
     user_id = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="followings"
-    )
-
-    following_user_id = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
         related_name="followers"
     )
 
+    follower_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="followings"
+    )
+
     class Meta:
-        unique_together = ("user_id", "following_user_id")
+        unique_together = ("user_id", "follower_id")
 
     def __str__(self) -> str:
-        return f"User {self.following_user_id} follows user {self.user_id}"
+        return f"User {self.user_id} follows user {self.follower_id}"
