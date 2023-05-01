@@ -30,6 +30,14 @@ class Post(models.Model):
     def __str__(self):
         return f"Post {self.id} by {self.author}"
 
+    @property
+    def count_likes(self):
+        return self.likes.count()
+
+    @property
+    def count_comments(self):
+        return self.comments.count()
+
 
 class Like(models.Model):
     user = models.ForeignKey(
