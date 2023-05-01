@@ -22,6 +22,7 @@ class Post(models.Model):
     content = models.TextField(null=True, blank=True)
     image = models.ImageField(null=True, blank=True, upload_to=post_image_file_path)
     created_at = models.DateTimeField(auto_now_add=True)
+    hashtag = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -30,3 +31,41 @@ class Post(models.Model):
         return f"Post {self.id} by {self.author}"
 
 
+class Like(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="likes"
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="likes"
+    )
+
+    class Meta:
+        unique_together = ("post", "user")
+
+    def __str__(self):
+        return f"{self.user} likes {self.post.id}"
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="comments"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="comments"
+    )
+    content = models.TextField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} comments {self.post.id}"
