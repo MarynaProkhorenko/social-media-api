@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from user.models import UserFollowing
+from user.models import UserFollowing, User
 
 
 class FollowingsSerializer(serializers.ModelSerializer):

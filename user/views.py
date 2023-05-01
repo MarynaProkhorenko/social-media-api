@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 from rest_framework import generics, mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -42,7 +43,7 @@ class UserView(
 ):
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = get_user_model().objects.prefetch_related("followings", "followers")
         if self.action == "list":
             first_name = self.request.query_params.get("first_name")
@@ -64,7 +65,7 @@ class UserView(
 
         return queryset
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> UserListSerializer | UserRetrieveSerializer:
         if self.action == "list":
             return UserListSerializer
 

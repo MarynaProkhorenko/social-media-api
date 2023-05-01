@@ -42,7 +42,7 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
-def user_image_file_path(instance, filename):
+def user_image_file_path(instance, filename) ->str:
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
 
@@ -64,11 +64,11 @@ class User(AbstractUser):
 
     objects = UserManager()
 
-    def __str__(self):
+    def __str__(self) ->str:
         return f"{self.first_name} {self.last_name}"
 
     @property
-    def count_followers(self):
+    def count_followers(self) -> int:
         return self.followers.count()
 
 

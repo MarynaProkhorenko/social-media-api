@@ -6,7 +6,7 @@ from django.db import models
 from django.utils.text import slugify
 
 
-def post_image_file_path(instance, filename):
+def post_image_file_path(instance, filename) -> str:
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
 
@@ -27,15 +27,15 @@ class Post(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Post {self.id} by {self.author}"
 
     @property
-    def count_likes(self):
+    def count_likes(self) -> int:
         return self.likes.count()
 
     @property
-    def count_comments(self):
+    def count_comments(self) -> int:
         return self.comments.count()
 
 
@@ -54,7 +54,7 @@ class Like(models.Model):
     class Meta:
         unique_together = ("post", "user")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user} likes {self.post.id}"
 
 
@@ -75,5 +75,5 @@ class Comment(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user} comments {self.post.id}"
