@@ -1,19 +1,26 @@
-from django.db.models import Q
-from django.shortcuts import render
-from rest_framework import viewsets, status
+from django.db.models import Q, QuerySet
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 
-from post.models import Post, Like
-from post.serializers import PostListSerializer, PostDetailSerializer, PostSerializer, LikeSerializer
+from post.permissions import IsAuthor
+from post.models import Post, Like, Comment
+from post.serializers import (
+    PostListSerializer,
+    PostDetailSerializer,
+    PostSerializer,
+    LikeSerializer,
+    CommentSerializer
+)
 
 
 class PostViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Post.objects.prefetch_related("likes", "comments")
-        if self.action in ("retrieve",):
+        if self.action in ("retrieve", "like", "unlike"):
             queryset = queryset.filter(
                 Q(author=self.request.user)
                 | Q(author__id__in=self.request.user.followings.values("user_id"))
@@ -38,6 +45,11 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def get_permissions(self) -> list[BasePermission]:
+        if self.action in ("update", "partial_update", "destroy"):
+            return [IsAuthor()]
+        return [IsAuthenticated()]
 
     @action(
         methods=["POST"],
@@ -69,3 +81,28 @@ class PostViewSet(viewsets.ModelViewSet):
         return_serializer = PostDetailSerializer(self.get_object())
         return Response(return_serializer.errors, status=status.HTTP_200_OK)
 
+
+class CommentViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = CommentSerializer
+    lookup_field = "id"
+
+    def perform_create(self, serializer):
+        post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
+        serializer.save(user=self.request.user, post=post)
+
+    def get_queryset(self) -> QuerySet:
+        return Comment.objects.select_related("author", "post").filter(
+            Q(post__author=self.request.user)
+            | Q(post__author_id__in=self.request.user.followings.values("user_id"))
+        )
+
+    def get_permissions(self) -> list[BasePermission]:
+        if self.action == "destroy":
+            return [IsAuthor()]
+        return [IsAuthenticated()]
