@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from rest_framework import generics, mixins, viewsets, status
@@ -30,7 +32,7 @@ class ManageUserView(
     def get_object(self):
         return self.request.user
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[UserRetrieveSerializer | UserUpdateSerializer]:
         if self.action == "retrieve":
             return UserRetrieveSerializer
         return UserUpdateSerializer
@@ -65,7 +67,7 @@ class UserView(
 
         return queryset
 
-    def get_serializer_class(self) -> UserListSerializer | UserRetrieveSerializer:
+    def get_serializer_class(self) -> Type[UserListSerializer | UserRetrieveSerializer]:
         if self.action == "list":
             return UserListSerializer
 

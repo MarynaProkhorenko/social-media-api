@@ -7,7 +7,6 @@ router = routers.DefaultRouter()
 router.register("", PostViewSet, basename="post")
 
 urlpatterns = [
-    path("", include(router.urls)),
     path(
         "<int:post_id>/comments/",
         CommentViewSet.as_view(actions={"get": "list", "post": "create"}),
@@ -18,6 +17,6 @@ urlpatterns = [
         CommentViewSet.as_view(actions={"get": "retrieve", "delete": "destroy"}),
         name="comment-detail",
     ),
-]
+] + path("", include(router.urls))
 
 app_name = "post"

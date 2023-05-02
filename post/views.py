@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.db.models import Q, QuerySet
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -33,7 +35,9 @@ class PostViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def get_serializer_class(self) -> PostSerializer:
+    def get_serializer_class(self) -> Type[
+        PostListSerializer | PostDetailSerializer | LikeSerializer | PostSerializer
+        ]:
         if self.action == "list":
             return PostListSerializer
 
@@ -65,10 +69,10 @@ class PostViewSet(viewsets.ModelViewSet):
         """Endpoint for post like. Returns the post detail"""
         post = self.get_object()
         user = self.request.user
-        serializer = LikeSerializer(data={"post": post.id, "user": user.id})
+        serializer = self.get_serializer(data={"post": post.id, "user": user.id})
 
-        if serializer.is_valid():
-            serializer.save()
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return_serializer = PostDetailSerializer(self.get_object())
         return Response(return_serializer.errors, status=status.HTTP_200_OK)
 
